@@ -25,44 +25,19 @@ void FaultManager_Init(FaultManager *fm) {
 // 2. Helper: Set a specific fault bit
 void SetFault(FaultManager *fm, uint32_t faultMask) {
     // TODO: Write the bitwise operation to set the bit
-    if (faultMask == FAULT_OVER_VOLTAGE) {
-        fm->active_faults |= FAULT_OVER_VOLTAGE;
-    } else if (faultMask == FAULT_UNDER_VOLTAGE) {
-        fm->active_faults |= FAULT_UNDER_VOLTAGE;
-    } else if (faultMask == FAULT_OVER_TEMP) {
-        fm->active_faults |= FAULT_OVER_TEMP;/
-    } else if (faultMask == FAULT_COMM_LOSS) {
-        fm->active_faults |= FAULT_COMM_LOSS;
-    }
+    fm->active_faults |= faultMask;
 }
 
 // 3. Helper: Clear a specific fault bit (e.g., if condition recovers)
 void ClearFault(FaultManager *fm, uint32_t faultMask) {
     // TODO: Write the bitwise operation to clear the bit
-    if (faultMask == FAULT_OVER_VOLTAGE) {
-        fm->active_faults &= ~FAULT_OVER_VOLTAGE;
-    } else if (faultMask == FAULT_UNDER_VOLTAGE) {
-        fm->active_faults &= ~FAULT_UNDER_VOLTAGE;
-    } else if (faultMask == FAULT_OVER_TEMP) {
-        fm->active_faults &= ~FAULT_OVER_TEMP;
-    } else if (faultMask == FAULT_COMM_LOSS) {
-        fm->active_faults &= ~FAULT_COMM_LOSS;
-    }
+    fm->active_faults &= ~faultMask;
 }
 
 // 4. Helper: Check if a specific fault is active
 bool IsFaultActive(FaultManager *fm, uint32_t faultMask) {
     // TODO: Return true if the bit is set
-    if (faultMask == FAULT_OVER_VOLTAGE) {
-        return (fm->active_faults & FAULT_OVER_VOLTAGE) != 0;
-    } else if (faultMask == FAULT_UNDER_VOLTAGE) {
-        return (fm->active_faults & FAULT_UNDER_VOLTAGE) != 0;
-    } else if (faultMask == FAULT_OVER_TEMP) {
-        return (fm->active_faults & FAULT_OVER_TEMP) != 0;
-    } else if (faultMask == FAULT_COMM_LOSS) {
-        return (fm->active_faults & FAULT_COMM_LOSS) != 0;
-    }
-    return false; 
+    return (fm->active_faults & faultMask) != 0;
 }
 
 // 5. Logic: Should we open the contactors?

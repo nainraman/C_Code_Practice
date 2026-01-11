@@ -82,6 +82,33 @@ Bitwise operators perform operations on individual bits of integers. They are us
 
 ---
 
+### Accessing Structure Members
+In the `FaultManager` structure, the `active_faults` member is accessed differently depending on whether the structure is a pointer or a direct instance:
+
+1. **For a Direct Instance**:
+   Use the dot (`.`) operator to access members:
+   ```c
+   FaultManager fm;
+   fm.active_faults = 0; // Accessing directly
+   if ((fm.active_faults & CRITICAL_MASK) != 0) {
+       // Check if any critical fault is active
+   }
+   ```
+
+2. **For a Pointer**:
+   Use the arrow (`->`) operator to access members:
+   ```c
+   FaultManager *fm_ptr = &fm;
+   fm_ptr->active_faults = 0; // Accessing via pointer
+   if ((fm_ptr->active_faults & CRITICAL_MASK) != 0) {
+       // Check if any critical fault is active
+   }
+   ```
+
+This distinction is important because the `FaultManager` functions (e.g., `SetFault`, `ClearFault`) use pointers to the structure. Therefore, the arrow operator (`->`) is used throughout the code.
+
+---
+
 ## Simulation Test
 The `main` function simulates two scenarios:
 1. **Setting a Critical Fault**:

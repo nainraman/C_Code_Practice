@@ -9,6 +9,7 @@
 #define THRESHOLD_HIGH      5.0f     // High threshold for spike detection
 #define THRESHOLD_LOW       3.0f     // Low threshold for spike exit
 #define MIN_SPIKE_SAMPLES   2        // Minimum samples required to confirm spike
+#define MIN_EXIT_SAMPLES    2        // Minimum samples required to exit spike
 
 uint16_t getSensorData(void)
 {
@@ -32,6 +33,7 @@ typedef struct
     float baseline;
     uint8_t in_spike;
     uint8_t spikecount;
+    uint8_t exitcount;               // Counter for spike exit confirmation
 } SpikeState;
 
 static SpikeState st;  // persistent across calls
@@ -44,6 +46,7 @@ void Spike_DetectorInit(SpikeState *st, float firstSample)
     st->baseline   = firstSample;
     st->in_spike   = 0;
     st->spikecount = 0;
+    st->exitcount  = 0;              // Initialize exit counter
 }
 
 //----------------------------------------------
@@ -66,6 +69,7 @@ bool Spike_Detector(SpikeState *st, float sample)
         if (fabsf(diff) > THRESHOLD_HIGH)
         {
             st->spikecount++;
+            st->exitcount = 0;       // Reset exit counter when above high threshold
 
             if (st->spikecount >= MIN_SPIKE_SAMPLES)
             {
@@ -85,7 +89,18 @@ bool Spike_Detector(SpikeState *st, float sample)
         // Already in spike: wait to drop below low threshold
         if (fabsf(diff) < THRESHOLD_LOW)
         {
-            st->in_spike = 0;
+            st->exitcount++;
+            st->spikecount = 0;      // Reset spike counter when below low threshold
+            
+            if (st->exitcount >= MIN_EXIT_SAMPLES)
+            {
+                st->in_spike = 0;
+                st->exitcount = 0;
+            }
+        }
+        else
+        {
+            st->exitcount = 0;       // Reset exit counter if signal goes back above threshold
         }
     }
 

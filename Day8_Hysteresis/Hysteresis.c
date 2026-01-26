@@ -10,20 +10,20 @@ typedef struct {
     bool is_on; // Memory: Is the fan currently running?
 } FanState;
 
-void Fan_Init(FanState *state) {
-    state->is_on = false;
+void Fan_Init(FanState *fan) {
+    fan->is_on = false;
 }
 
 // Run this periodically (e.g., every 1 second)
-void Fan_Update(FanState *state, float current_temp) {
+void Fan_Update(FanState *fan, float current_temp) {
     // TODO: Implement Hysteresis Logic
     // 1. If temp > TURN_ON, force ON.
     // 2. If temp < TURN_OFF, force OFF.
     // 3. If in between... do NOT touch the state.
     if (current_temp > TEMP_TURN_ON) {
-        state->is_on = true;
+        fan->is_on = true;
     } else if (current_temp < TEMP_TURN_OFF) {
-        state->is_on = false;
+        fan->is_on = false;
     }
 }
 

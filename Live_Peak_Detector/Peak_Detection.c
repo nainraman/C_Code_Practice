@@ -2,6 +2,13 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
+#include <stdbool.h>  // Add for bool type
+
+// Spike detection parameters
+#define ALPHA_BASELINE      0.02f    // EMA smoothing factor for baseline
+#define THRESHOLD_HIGH      5.0f     // High threshold for spike detection
+#define THRESHOLD_LOW       3.0f     // Low threshold for spike exit
+#define MIN_SPIKE_SAMPLES   2        // Minimum samples required to confirm spike
 
 uint16_t getSensorData(void)
 {
@@ -42,35 +49,30 @@ void Spike_DetectorInit(SpikeState *st, float firstSample)
 //----------------------------------------------
 // Update baseline (EMA) and detect spikes
 //----------------------------------------------
-uint8_t Spike_Detector(SpikeState *st,
-                       float sample,
-                       float alpha,
-                       float thresholdHigh,
-                       float thresholdLow,
-                       uint8_t minSpikeSamples)
+bool Spike_Detector(SpikeState *st, float sample)
 {
-    // Update baseline
+    // Update baseline using the defined constant
     float b_prev = st->baseline;
-    float baseline = (1.0f - alpha) * b_prev + alpha * sample;
+    float baseline = (1.0f - ALPHA_BASELINE) * b_prev + ALPHA_BASELINE * sample;
     st->baseline = baseline;
 
     // Compute deviation
     float diff = sample - baseline;
 
-    // Spike detection logic
+    // Spike detection logic using defined constants
     if (!st->in_spike)
     {
         // Not in spike: look for high threshold crossing
-        if (fabsf(diff) > thresholdHigh)
+        if (fabsf(diff) > THRESHOLD_HIGH)
         {
             st->spikecount++;
 
-            if (st->spikecount >= minSpikeSamples)
+            if (st->spikecount >= MIN_SPIKE_SAMPLES)
             {
                 st->in_spike = 1;
                 st->spikecount = 0;
 
-                return 1;  // spike event detected
+                return true;  // spike event detected
             }
         }
         else
@@ -81,13 +83,13 @@ uint8_t Spike_Detector(SpikeState *st,
     else
     {
         // Already in spike: wait to drop below low threshold
-        if (fabsf(diff) < thresholdLow)
+        if (fabsf(diff) < THRESHOLD_LOW)
         {
             st->in_spike = 0;
         }
     }
 
-    return 0;  // no new spike
+    return false;  // no new spike
 }
 
 //----------------------------------------------
@@ -95,18 +97,9 @@ uint8_t Spike_Detector(SpikeState *st,
 //----------------------------------------------
 void run10ms(void)
 {
-    float alpha = 0.02f;
-    float thresholdHigh = 5.0f;   // tune these for your test signal
-    float thresholdLow  = 3.0f;
-    uint8_t minSpikeSamples = 2;
-
     float sample = (float)getSensorData();
 
-    uint8_t spike = Spike_Detector(&st, sample,
-                                   alpha,
-                                   thresholdHigh,
-                                   thresholdLow,
-                                   minSpikeSamples);
+    bool spike = Spike_Detector(&st, sample);
 
     if (spike)
     {
